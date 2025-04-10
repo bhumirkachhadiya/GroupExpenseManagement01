@@ -1,0 +1,231 @@
+﻿@model DataTable;
+@using System.Data;
+@using GroupExpenseManagement01.BAL
+@using GroupExpenseManagement01.CommonClasses
+@inject GroupExpenseManagement01.Services.IEncryptionService EncryptionService
+
+
+<section class="section">
+    <div class="pagetitle">
+        <h1>Groups</h1>
+        <nav>
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                <li class="breadcrumb-item active">Groups</li>
+            </ol>
+        </nav>
+    </div><!-- End Page Title -->
+
+    <div class="row">
+        <div class="col">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex flex-row justify-content-between">
+                        <h5 class="card-title">Groups Table</h5>
+                        <div class="float-end d-flex flex-row mt-3">
+                            <!-- Action buttons -->
+                        <span >
+                                @* <a class="btn btn-primary mb-3 me-3" asp-controller="Group" asp-action="AddUpdateGroup">Create Group</a> *@
+                                
+                                <button 
+                                    class="Btn me-3" 
+                                    onclick="location.href='@Url.Action("AddUpdateGroup", "Group")'">
+
+                                    <div class="sign">+</div>
+
+                                    <div class="text ms-5">Create</div>
+                                </button>
+
+                        </span>
+                                <!-- Search bar -->
+                        <span >
+                            <input type="text" id="searchInput" class="form-control mb-3" placeholder="Search Groups" title="Enter search keyword">
+                        </span>
+                          </div>  
+                        
+                    </div>
+
+                    @if (TempData["ErrorMSG"] != null)
+                    {
+                        <div class="alert alert-danger">
+                            @TempData["ErrorMSG"]
+                        </div>
+                    }
+                    @if (TempData["InsertUpdateMSG"] != null)
+                    {
+                        <div class="alert alert-success">
+                            @TempData["InsertUpdateMSG"]
+                        </div>
+                    }
+                    @if (TempData["Message"] != null)
+                    {
+                        <div class="alert alert-success">
+                            @TempData["Message"]
+                        </div>
+                    }
+
+                    <div class="table-responsive">
+                        <table id="groups-table" class="display table table-striped dataTable" role="grid">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Group Name</th>
+                                    <th scope="col">Description</th>
+                                    <th scope="col">Created By</th>
+                                    <th scope="col">Created Date</th>
+                                    <th scope="col">Your Role</th>
+                                    <th scope="col">Members</th>
+                                    <th scope="col">Expenses</th>
+                                    <th scope="col">Edit</th>
+                                    <th scope="col">Delete</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tableBody">
+                                @foreach (DataRow dr in Model.Rows)
+                                {
+                                    <tr>
+                                        <th scope="row">@dr["GroupName"]</th>
+                                        <td>@dr["Description"]</td>
+                                        <td>@dr["UserName"]</td>
+                                        <td>@HelperClass.FormatDateTime(Convert.ToDateTime(dr["CreatedDate"]))</td>
+                                        <td>@dr["Role"]</td>
+                                        <th scope="row">@dr["MemberCount"]</th>
+
+                                        <td>
+                                            <a class="btn btn-outline-warning btn-xs"
+                                               asp-controller="Expense"
+                                               asp-action="GroupExpense"
+                                               asp-route-GroupIDString="@EncryptionService.EncryptInteger(Convert.ToInt32(dr["GroupID"]))">
+                                                <i class="bi bi-list-task"></i>
+                                            </a>
+                                        </td>
+
+                                        <td>
+                                            @if (Convert.ToInt32(dr["CreatedBy"]) == CV.UserID())
+                                            {
+                                                <a class="btn btn-outline-success btn-xs"
+                                                   asp-controller="Group"
+                                                   asp-action="AddUpdateGroup"
+                                                   asp-route-GroupIDString="@EncryptionService.EncryptInteger(Convert.ToInt32(dr["GroupID"]))">
+                                                    <i class="bi bi-pencil-fill"></i>
+                                                </a>
+                                            }
+                                            else
+                                            {
+                                                <a class="btn btn-outline-success btn-xs disabled" tabindex="-1" aria-disabled="true">
+                                                    <i class="bi bi-pencil-fill"></i>
+                                                </a>
+                                            }
+                                            
+                                        </td>
+                                        <td>
+                                            <form method="post" asp-controller="Group" asp-action="DeleteGroup" onsubmit="return confirmDelete()">
+                                                <input type="hidden" name="GroupID" value="@dr["GroupID"]" />
+                                                @if (Convert.ToInt32(dr["CreatedBy"]) == CV.UserID())
+                                                {
+                                                    <button type="submit" class="btn btn-outline-danger btn-xs">
+                                                        <i class=" bi bi-trash3"></i>
+                                                    </button>
+                                                }
+                                                else
+                                                {
+                                                    <button type="submit" class="btn btn-outline-danger btn-xs" disabled>
+                                                        <i class=" bi bi-trash3"></i>
+                                                    </button>
+                                                }
+                                            </form>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        function confirmDelete() {
+            return confirm("Are you sure you want to delete this group?");
+        }
+    </script>
+    <script>
+        $(document).ready(function () {
+            $("#searchInput").on("keyup", function () {
+                var value = $(this).val().toLowerCase();
+                $("#tableBody tr").filter(function () {
+                    $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1);
+                });
+            });
+        });
+    </script>
+}
+
+@section Styles {
+    <style>
+        /* From Uiverse.io by vinodjangid07 */
+        .Btn {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            width: 39px;
+            height: 36px;
+            border: none;
+            border-radius: 0px;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition-duration: .3s;
+            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.199);
+            background-color: black;
+        }
+
+        /* plus sign */
+        .sign {
+            width: 100%;
+            font-size: 2em;
+            color: white;
+            transition-duration: .3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        /* text */
+        .text {
+            position: absolute;
+            left: -2%;
+            right: 0%;
+            width: 0%;
+            opacity: 0;
+            color: white;
+            font-size: 1.2em;
+            font-weight: 500;
+            transition-duration: .3s;
+        }
+        /* hover effect on button width */
+        .Btn:hover {
+            width: 125px;
+            border-radius: 0px;
+            transition-duration: .3s;
+        }
+
+            .Btn:hover .sign {
+                width: 30%;
+                transition-duration: .3s;
+                padding-left: 20px;
+            }
+            /* hover effect button's text */
+            .Btn:hover .text {
+                opacity: 1;
+                width: 70%;
+                transition-duration: .3s;
+                padding-right: 20px;
+            }
+        /* button click effect*/
+        .Btn:active {
+            transform: translate(2px,2px);
+        }
+    </style>
+}

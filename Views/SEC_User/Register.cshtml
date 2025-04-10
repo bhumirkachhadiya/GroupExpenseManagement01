@@ -1,0 +1,200 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+}
+
+@model SEC_UserModel
+
+@{
+    Layout = "~/Views/Shared/_Layout_Login.cshtml";
+}
+
+<div class="session">
+    <div class="left">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 302.5" version="1.1">
+            <style type="text/css">
+                .st01 {
+                    fill: #fff;
+                }</style>
+            <path class="st01" d="m126 302.2..."></path>
+        </svg>
+    </div>
+
+    <form method="post" asp-action="OtpMail" asp-controller="SEC_User" class="log-in" enctype="multipart/form-data" autocomplete="off">
+        @* <h4>We are <span>NUVA</span></h4> *@
+        @* <h4>Register Yourself</h4> *@
+        <h4>We are <span>Expense Management</span></h4>
+        <p>Create your account to join us today:</p>
+
+        <div asp-validation-summary="All" style="color: red;margin-left: 20px;"></div>
+        @if (TempData["Error"] != null)
+        {
+            <h4 class="text-danger">@TempData["Error"]</h4>
+        }
+        @if (TempData["ErrorMSG"] != null)
+        {
+            <div style="padding: 15px; margin-bottom: 20px; border: 1px solid #f5c6cb; border-radius: 4px; color: #721c24; background-color: #f8d7da;">
+                @TempData["ErrorMSG"]
+            </div>
+        }
+        @if (TempData["UpdateMSG"] != null)
+        {
+            <div style="padding: 15px; margin-bottom: 20px; border: 1px solid #c3e6cb; border-radius: 4px; color: #155724; background-color: #d4edda;">
+                @TempData["UpdateMSG"]
+            </div>
+        }
+
+        <div class="floating-label">
+            <input placeholder="User Name" id="Name" asp-for="UserName" autocomplete="off" />
+            <label for="UserName">User Name:</label>
+        </div>
+
+        <div class="floating-label">
+            <input placeholder="Email" id="Email" asp-for="Email" autocomplete="off" />
+            <label for="Email">Email:</label>
+        </div>
+        <button type="submit">Get Otp</button>
+    </form>
+    <form method="post" asp-action="Register" asp-controller="SEC_User" class="log-in" enctype="multipart/form-data" autocomplete="off">
+        <input asp-for="UserName" type="hidden" />
+        <input asp-for="Email" type="hidden" />
+        <input asp-for="PhotoPath" type="hidden" />
+
+        <div class="floating-label">
+            <input placeholder="Otp" asp-for="Otp" autocomplete="off" />
+            <label for="Otp">Otp:</label>
+        </div>
+        <div class="floating-label">
+            <input placeholder="Password" asp-for="Password" autocomplete="off" type="password" />
+            <label for="Password">Password:</label>
+        </div>
+        <div class="floating-label">
+            <input placeholder="Confirm Password" asp-for="ConfirmPassword" autocomplete="off" type="password" />
+            <label for="ConfirmPassword">Confirm Password:</label>
+        </div>
+
+        <div class="floating-label">
+            <input placeholder="Mobile No" asp-for="MobileNo" autocomplete="off" />
+            <label for="MobileNo">Mobile No:</label>
+        </div>
+
+        <div class="floating-label">
+            <input placeholder="Address" asp-for="Address" autocomplete="off" />
+            <label for="Address">Address:</label>
+        </div>
+
+        <div style="margin: 3vh 0 3vh 6vh;">
+        @* <div style="margin: 3vh 0 3vh 43px;"> *@
+            <label for="bio" style="font-size: 0.9em;">Main Currency:</label>
+            <div style="margin-top:1vh;">
+                <select class="form-control custom-dropdown"
+                        style="width: 35vh;"
+                        asp-for="MainCurrencyID"
+                        asp-items="@(new SelectList(ViewBag.CurrencyList, "CurrencyID", "CurrencyName"))">
+                    @* <option value="" disabled selected>Select Currency</option> *@
+                </select>
+
+                <span asp-validation-for="MainCurrencyID" class="text-danger"></span>
+            </div>
+        </div>
+
+        <!-- Profile Photo Upload and Preview -->
+        <div style="margin-left: 6vh;">
+            <label style="font-size: 0.9em;">Profile Photo:</label>
+            <div>
+                <img id="imagePreview"
+                     src="@Url.Content(Model.PhotoPath ?? "#")"
+                     alt="Image Preview"
+                     style="width: 150px; height: 150px; border-radius: 50%; object-fit: cover; display: @(string.IsNullOrEmpty(Model.PhotoPath) ? "none" : "block"); margin: 10px auto;" />
+            </div>
+            @* <input type="file" id="imageUpload" asp-for="file" class="form-control mb-3 mt-3" accept="image/*" onchange="previewImage(event)" style="margin: 20px auto; display: block;" /> *@
+
+            <input type="file" id="imageUpload" asp-for="file" class="form-control mb-3 mt-3"
+                   accept="image/*" onchange="previewImage(event)"
+                   style="margin: 20px auto; display: block; visibility: hidden; position: absolute;" />
+
+            <div style="display: flex;justify-content: space-between;">
+                <button type="button" style="margin-right: 1.7vh" onclick="triggerFileInput()">Select</button>
+                <button type="button" id="removeImageButton" style="display: @(string.IsNullOrEmpty(Model.PhotoPath) ? "none" : "block");" onclick="removeImage()">Remove</button>
+            </div>
+        </div>
+
+        
+
+        <button type="submit">Sign up</button>
+
+        <a asp-action="Index" asp-controller="SEC_User" class="discrete">Already have an account? <span style="color: #007bff;">Log in</span></a>
+    </form>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script>
+        function triggerFileInput() {
+            document.getElementById('imageUpload').click(); // Simulate click on file input
+        }
+        // Function to handle image preview when a file is selected
+        function previewImage(event) {
+            var imagePreview = document.getElementById('imagePreview');
+            var removeButton = document.getElementById('removeImageButton');
+            var file = event.target.files[0];
+
+            if (file) {
+                var reader = new FileReader();
+
+                reader.onload = function (e) {
+                    imagePreview.src = e.target.result;
+                    imagePreview.style.display = 'block'; // Show the image once it's loaded
+                    removeButton.style.display = 'block'; // Show the remove button
+                }
+
+                reader.readAsDataURL(file); // Convert the image file to a data URL
+            } else {
+                imagePreview.src = '#';
+                imagePreview.style.display = 'none'; // Hide the image if no file is selected
+                removeButton.style.display = 'none'; // Hide the remove button
+            }
+        }
+
+        // Function to handle removing the selected image
+        function removeImage() {
+            var imageUpload = document.getElementById('imageUpload');
+            var imagePreview = document.getElementById('imagePreview');
+            var removeButton = document.getElementById('removeImageButton');
+
+            // Reset the file input and hide the image preview
+            imageUpload.value = '';
+            imagePreview.src = '#';
+            imagePreview.style.display = 'none';
+            removeButton.style.display = 'none';
+        }
+    </script>
+}
+
+@section Styles {
+    <style>
+        /* Custom CSS for the dropdown */
+        .custom-dropdown {
+            /* rgb(182, 157, 230) */
+            border: 2px solid rgb(182, 157, 230);
+            /* border: 2px solid #007bff; */
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-size: 1rem;
+            color: #495057;
+            background-color: #f8f9fa;
+            transition: border-color 0.3s ease-in-out;
+        }
+
+            .custom-dropdown:focus {
+                /* border-color: #0056b3; */
+                border-color: rgb(182, 157, 230);
+                outline: none;
+                box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+            }
+
+    </style>        
+}

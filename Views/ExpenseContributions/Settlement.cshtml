@@ -1,0 +1,213 @@
+﻿@model DataTable;
+@using System.Data;
+@using GroupExpenseManagement01.BAL
+@using GroupExpenseManagement01.CommonClasses
+@inject GroupExpenseManagement01.Services.IEncryptionService EncryptionService
+
+<section class="section">
+    <div class="pagetitle">
+        <h1>@ViewData["GroupName"]</h1>
+        <div>
+        <nav>
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                <li class="breadcrumb-item"><a asp-controller="Group" asp-action="Index">Groups</a></li>
+                <li class="breadcrumb-item">
+                    <a asp-controller="Expense"
+                       asp-action="GroupExpense"
+                       asp-route-GroupIDString="@ViewData["GroupIDString"]">
+                        @ViewData["GroupName"]'s Expenses
+                    </a>
+                </li>
+                <li class="breadcrumb-item active">Settlement</li>
+            </ol>
+        </nav>
+        </div>
+    </div><!-- End Page Title -->
+    <!--Debts Table BTN-->
+    <div class="d-flex justify-content-end align-items-center flex-wrap gap-2">
+        <button class="button"
+                type="button"
+                onclick="location.href='@Url.Action("ExportToExcelSettlement", "ExpenseContributions", new { GroupIDString = ViewData["GroupIDString"] })'">
+            <span class="button__text">Download</span>
+            <span class="button__icon">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 35 35" id="bdd05811-e15d-428c-bb53-8661459f9307" data-name="Layer 2" class="svg">
+                    <path d="M17.5,22.131a1.249,1.249,0,0,1-1.25-1.25V2.187a1.25,1.25,0,0,1,2.5,0V20.881A1.25,1.25,0,0,1,17.5,22.131Z"></path>
+                    <path d="M17.5,22.693a3.189,3.189,0,0,1-2.262-.936L8.487,15.006a1.249,1.249,0,0,1,1.767-1.767l6.751,6.751a.7.7,0,0,0,.99,0l6.751-6.751a1.25,1.25,0,0,1,1.768,1.767l-6.752,6.751A3.191,3.191,0,0,1,17.5,22.693Z"></path>
+                    <path d="M31.436,34.063H3.564A3.318,3.318,0,0,1,.25,30.749V22.011a1.25,1.25,0,0,1,2.5,0v8.738a.815.815,0,0,0,.814.814H31.436a.815.815,0,0,0,.814-.814V22.011a1.25,1.25,0,1,1,2.5,0v8.738A3.318,3.318,0,0,1,31.436,34.063Z"></path>
+                </svg>
+            </span>
+        </button>
+
+        <button class="button"
+                type="button"
+                style="background-color: #007bff;border: 1px solid #0056b3;"
+                onclick="location.href='@Url.Action("MailSettlement", "ExpenseContributions", new { GroupIDString = ViewData["GroupIDString"] })'">
+            <span class="button__text" style="color: #ffffff;">Send Mail</span>
+            <span class="button__icon" style="background-color: #0056b3;">
+                <!-- New SVG Replaced -->
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" class="svg" style="width: 22px; fill: #fff;">
+                    <path d="M48 64C21.5 64 0 85.5 0 112c0 15.1 7.1 29.3 19.2 38.4L236.8 313.6c11.4 8.5 27 8.5 38.4 0L492.8 150.4c12.1-9.1 19.2-23.3 19.2-38.4c0-26.5-21.5-48-48-48L48 64zM0 176L0 384c0 35.3 28.7 64 64 64l384 0c35.3 0 64-28.7 64-64l0-208L294.4 339.2c-22.8 17.1-54 17.1-76.8 0L0 176z" />
+                </svg>
+            </span>
+        </button>
+    </div>
+    <!--Debts Table-->
+    <div class="row">
+        <div class="col">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex flex-row justify-content-between">
+                        <h5 class="card-title">Debts</h5>
+                        <span class="float-end mt-3">
+                            <!-- Search bar -->
+                            <input type="text" id="searchInput" class="form-control mb-3" placeholder="Search" title="Enter search keyword">
+                        </span>
+                    </div>
+
+                    @if (TempData["ErrorMSG"] != null)
+                    {
+                        <div class="alert alert-danger">
+                            @TempData["ErrorMSG"]
+                        </div>
+                    }
+                    @if (TempData["InsertUpdateMSG"] != null)
+                    {
+                        <div class="alert alert-success">
+                            @TempData["InsertUpdateMSG"]
+                        </div>
+                    }
+                    @if (TempData["Message"] != null)
+                    {
+                        <div class="alert alert-success">
+                            @TempData["Message"]
+                        </div>
+                    }
+
+                    <div class="table-responsive">
+                        <table id="groups-table" class="display table table-striped dataTable" role="grid">
+                            <tbody id="tableBody">
+                                @foreach (DataRow dr in Model.Rows)
+                                {
+                                    <tr>
+                                        @if (Convert.ToInt32(@dr["DebtorUserID"]) == CV.UserID())
+                                        {
+                                            <th scope="row" class="text-danger">@dr["DebtorUserName"] (@dr["DebtorUserEmail"])</th>
+                                        }else{
+                                            <td scope="row">@dr["DebtorUserName"] (@dr["DebtorUserEmail"])</td>
+                                        }
+                                        <th scope="row" class="text-primary"> -> </th>
+                                        @if (Convert.ToInt32(@dr["CreditorUserID"]) == CV.UserID())
+                                        {
+                                            <th scope="row" class="text-success">@dr["CreditorUserName"] (@dr["CreditorUserEmail"])</th>
+                                        }
+                                        else
+                                        {
+                                            <td scope="row">@dr["CreditorUserName"] (@dr["CreditorUserEmail"])</td>
+                                        }
+
+                                        @if ("INR".Equals(CV.CurrencyName(), StringComparison.OrdinalIgnoreCase))
+                                        {
+                                            <th>@HelperClass.FormatToIndianCurrency(Convert.ToDecimal(dr["Amount"]))</th>
+                                        }
+                                        else if ("USD".Equals(CV.CurrencyName(), StringComparison.OrdinalIgnoreCase))
+                                        {
+                                            <th>@HelperClass.FormatToUSDCurrency(Convert.ToDecimal(dr["Amount"]))</th>
+                                        }
+                                        else if ("EUR".Equals(CV.CurrencyName(), StringComparison.OrdinalIgnoreCase))
+                                        {
+                                            <th>@HelperClass.FormatToEuroCurrency(Convert.ToDecimal(dr["Amount"]))</th>
+                                        }
+                                        @* <th>@HelperClass.FormatToIndianCurrency(Convert.ToDecimal(dr["Amount"]))</th> *@
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        function confirmDelete() {
+            return confirm("Are you sure you want to delete this group?");
+        }
+    </script>
+    <script>
+        $(document).ready(function () {
+            $("#searchInput").on("keyup", function () {
+                var value = $(this).val().toLowerCase();
+                $("#tableBody tr").filter(function () {
+                    $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1);
+                });
+            });
+        });
+    </script>
+}
+
+@section Styles {
+    <style>
+        /* From Uiverse.io by andrew-demchenk0 */
+        .button {
+            position: relative;
+            width: 150px;
+            height: 40px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            border: 1px solid #17795E;
+            background-color: #209978;
+            overflow: hidden;
+        }
+
+        .button, .button__icon, .button__text {
+            transition: all 0.3s;
+        }
+
+            .button .button__text {
+                transform: translateX(22px);
+                color: #fff;
+                font-weight: 600;
+            }
+
+            .button .button__icon {
+                position: absolute;
+                transform: translateX(109px);
+                height: 100%;
+                width: 39px;
+                background-color: #17795E;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .button .svg {
+                width: 20px;
+                fill: #fff;
+            }
+
+            .button:hover {
+                background: #17795E;
+            }
+
+                .button:hover .button__text {
+                    color: transparent;
+                }
+
+                .button:hover .button__icon {
+                    width: 148px;
+                    transform: translateX(0);
+                }
+
+            .button:active .button__icon {
+                background-color: #146c54;
+            }
+
+            .button:active {
+                border: 1px solid #146c54;
+            }
+    </style>
+}

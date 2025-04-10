@@ -1,0 +1,280 @@
+﻿@model Profile
+@using GroupExpenseManagement01.BAL
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/styles.css" />
+    <link rel="stylesheet" href="~/css/styles2.css" />
+}
+<section class="section">
+    <div class="pagetitle">
+        <h1>Profile</h1>
+        <nav>
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                <li class="breadcrumb-item active">Profile</li>
+                <li class="breadcrumb-item active">Edit Profile</li>
+            </ol>
+        </nav>
+    </div><!-- End Page Title -->
+    <div class="row">
+        <div class="container">
+    @if (TempData["ErrorMSG"] != null)
+    {
+        <div class="alert alert-danger">
+            @TempData["ErrorMSG"]
+        </div>
+    }
+    @if (TempData["UpdateMSG"] != null)
+    {
+        <div class="alert alert-success">
+            @TempData["UpdateMSG"]
+        </div>
+    }
+    <div class="profile-header">
+        <div class="profile-image">
+            @if (!string.IsNullOrEmpty(CV.PhotoPath()))
+            {
+                <img src="@Url.Content(CV.PhotoPath())" alt="Profile"/>
+            }
+            else
+            {
+                <img src="~/assets/img/profile-img.jpg" />
+            }
+            @* <img src="@Url.Content(Model.PhotoPath)" alt="Profile"> *@
+        </div>
+        <div class="profile-info">
+            <h2>@Model.UserName</h2>
+            <p>@Model.Email</p>
+        </div>
+        @* <button class="btn-change-photo">Change photo</button> *@
+        <!-- Add Change Photo button to open a new popup -->
+        <button type="button" class="btn-change-photo" id="openPhotoPopup">Change Photo</button>
+
+        <!-- Popup overlay for changing the photo -->
+        <div id="photoPopup" class="popup-overlay">
+            <div class="popup-content">
+                <div class="popup-header">
+                    <h2>Change Profile Photo</h2>
+                    <span class="close-popup" id="closePhotoPopup">&times;</span>
+                </div>
+                <form method="post" asp-action="PhotoUpdate" asp-controller="SEC_User" class="" enctype="multipart/form-data">
+                    <input type="hidden" id="photoPath" asp-for="PhotoPath"> <!-- Hidden input for PhotoPath -->
+                    
+                    <label for="photoUpload">Upload New Photo</label>
+                    <img id="imagePreview"
+                         src="@Url.Content(Model.PhotoPath ?? "#")"
+                         alt="Image Preview"
+                         style="width: 150px; height: 150px; border-radius: 50%; display: @(string.IsNullOrEmpty(Model.PhotoPath) ? "none" : "block"); object-fit: cover;  margin: 10px auto;" />
+                    <span asp-validation-for="file" class="text-danger"></span>
+                         @* <input type="file" id="imageUpload" asp-for="file" class="form-control mb-3 mt-3" accept="image/*" onchange="previewImage(event)" style="margin: 20px auto; display: block;" /> *@
+                    <input type="file" id="imageUpload" asp-for="file" class="form-control mb-3 mt-3"
+                           accept="image/*" onchange="previewImage(event)"
+                           style="margin: 20px auto; display: block; visibility: hidden; position: absolute;" />
+
+                    <button type="button" class="btn-change-photo" onclick="triggerFileInput()">Change Photo</button>
+                    <button type="button" class="btn btn-danger mb-3" id="removeImageButton" style="display: @(string.IsNullOrEmpty(Model.PhotoPath) ? "none" : "block"); margin-top: 10px" onclick="removeImage()">Remove Photo</button>
+                    <button type="submit" class="btn-submit">Upload</button>
+                </form>
+                @* <form enctype="multipart/form-data">
+                    <label for="photoUpload">Upload New Photo</label>
+                    <input type="file" id="imageUpload" asp-for="file" class="form-control mb-3 mt-3"
+                           accept="image/*" onchange="previewImage(event)"
+                           style="margin: 20px auto; display: block; visibility: hidden; position: absolute;" />
+
+                    <button type="button" class="btn-change-photo" onclick="triggerFileInput()">Change Photo</button>
+
+                    <button type="submit" class="btn-submit">Upload</button>
+                </form> *@
+            </div>
+        </div>
+    </div>
+
+    <form asp-action="ProfileUpdate" asp-controller="SEC_User" method="post" class="">
+        <div asp-validation-summary="All" class="text-danger"></div>
+        @* <div class="form-group">
+            <label for="website">Mail</label>
+            <br/>
+            <input type="text" asp-for="Email" id="website" style="width: 96%;" placeholder="Mail" disabled>
+            <!-- <p class="info-text">Editing your links is only available on mobile. Visit the Instagram app and edit your profile to change the websites in your bio.</p> -->
+        </div> *@
+        <div class="row">
+
+            <div class="form-group col-6 col-sm-4">
+                <label for="bio">Name</label>
+                <input type="text" asp-for="UserName" id="website" placeholder="Name" style="width: 96%;">
+                <br />
+                <span asp-validation-for="UserName" class="text-danger"></span>
+            </div>
+
+            <div class="form-group col-6 col-sm-4">
+                <label for="bio">Contact Number</label>
+                <input type="text" asp-for="MobileNo" id="website" placeholder="Contact Number" style="width: 96%;">
+                <br />
+                <span asp-validation-for="MobileNo" class="text-danger"></span>
+                <!-- <textarea id="bio" rows="3" maxlength="150" style="width: 96%;">Glorious Purpose 💚</textarea> -->
+            </div>
+
+            <div class="form-group col col-sm-4">
+                <label for="bio">Main Currency</label>
+                        
+                            <div class="col-sm-10 ms-1">
+                                <select class="form-control" asp-for="MainCurrencyID" asp-items="@(new SelectList(ViewBag.CurrencyList, "CurrencyID", "CurrencyName"))">
+                                    @* <option value="">Select Currency</option> *@
+                                </select>
+                                <span asp-validation-for="MainCurrencyID" class="text-danger"></span>
+                            </div>
+                        
+                <br />
+                <!-- <textarea id="bio" rows="3" maxlength="150" style="width: 96%;">Glorious Purpose 💚</textarea> -->
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="bio">Address</label>
+            <textarea id="bio" asp-for="Address" rows="4" maxlength="150" style="width: 96%;" placeholder="Address"></textarea>
+            <br />
+            <span asp-validation-for="Address" class="text-danger"></span>
+
+        </div>
+
+        <!--Forgot Password-->
+        <div class="row d-flex justify-content-start">
+            <div class="d-flex flex-row">
+                <p style="text-decoration: underline; cursor: pointer;margin: 0 20px 0 0" class="text-primary d-flex justify-content-start" id="openPopup"><b>Password Management</b></p>
+                <div class="vr"></div>
+                <p style="text-decoration: underline; cursor: pointer;margin: 0 0 0 20px" class="text-primary d-flex justify-content-center" id="openForgottenPopup"><b>Forgot password?</b></p>
+            </div>
+       </div>
+        
+        <!--buttons-->
+        <div class="row d-flex justify-content-center">
+            @* <div class="col-sm"></div> *@
+            <div class="col-6">
+               <button type="submit" class="btn btn-primary btn-submit">Save</button>
+            </div>
+            <div class="col-6">
+                <button type="reset" class="btn btn-secondary btn-submit">Reset</button>
+            </div>
+            @* <div class="col-sm"></div> *@
+        </div> 
+        <br/>
+        @* <button type="submit" class="btn btn-primary btn-submit">Submit</button> *@
+        <!-- Add the Change Password button -->
+        @* <button type="button" class="btn-submit" id="openPopup">Change Password</button> *@
+    </form>    
+</div>
+    </div>
+</section>
+
+<!-- Popup overlay for changing the password -->
+<div id="popup" class="popup-overlay">
+    <div class="popup-content">
+        <div class="popup-header">
+            <h2>Change Password</h2>
+            <span class="close-popup" id="closePopup">&times;</span>
+        </div>
+        <p>Your password must be at least 8 characters and should include a combination of numbers, letters, and special characters (!, $, %, etc.).</p>
+        <form method="post" asp-action="PasswordUpdate" asp-controller="SEC_User">
+            <label for="current-password">Current Password</label>
+            <input type="password" asp-for="OldPassword" id="current-password" placeholder="Enter current password">
+            <span asp-validation-for="OldPassword" class="text-danger"></span>
+
+            <label for="new-password">New Password</label>
+            <input type="password" asp-for="Password" id="new-password" placeholder="Enter new password">
+            <span asp-validation-for="Password" class="text-danger"></span>
+
+            <label for="confirm-password">Re-type New Password</label>
+            <input type="password" asp-for="ConfirmPassword" id="confirm-password" placeholder="Re-enter new password">
+            <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+
+          @*<div class="form-footer">
+                <div>
+                    <input type="checkbox" id="logout-other-devices">
+                    <label for="logout-other-devices">Log out of other devices</label>
+                </div>
+            </div>*@
+            <button type="submit" class="btn-submit">Change Password</button>
+        </form>
+        
+    </div>
+</div>
+
+
+<!-- Popup overlay for changing the Forgotten password -->
+<div id="forgottenPopup" class="popup-overlay" style="display: none;">
+    <div class="popup-content">
+        <div class="popup-header">
+            <h2>Forgot Password</h2>
+            <span class="close-popup" id="closeForgottenPopup">&times;</span>
+        </div>
+        <b>Enter the verification OTP, and you will receive your new password in your email!</b>
+        <br />
+        <br/>
+        <form method="post" asp-action="NewPasswordMail" asp-controller="SEC_User">
+            <label for="current-password">Otp</label>
+            <input type="text" name="otp" placeholder="Enter Otp">
+            
+            <button type="submit" class="btn-submit">Change Password</button>
+        </form>
+
+    </div>
+</div>
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script src="~/js/script.js"></script>
+
+    <script type="text/javascript">
+        // Get elements for forgotten password popup
+        const openForgottenPopup = document.getElementById('openForgottenPopup');
+        const closeForgottenPopup = document.getElementById('closeForgottenPopup');
+        const forgottenPopup = document.getElementById('forgottenPopup');
+
+        // Open the forgotten password popup
+        openForgottenPopup.addEventListener('click', () => {
+            // Open the popup
+            forgottenPopup.style.display = 'block';
+
+            // Call the controller action to send OTP email
+            sendOtpEmail();
+        });
+
+        // Close the forgotten password popup
+        closeForgottenPopup.addEventListener('click', () => {
+            forgottenPopup.style.display = 'none';
+        });
+
+        // Close the forgotten password popup when clicking outside of it
+        window.addEventListener('click', (event) => {
+            if (event.target === forgottenPopup) {
+                forgottenPopup.style.display = 'none';
+            }
+        });
+
+        // Function to send OTP email via AJAX
+        function sendOtpEmail() {
+            var url = '@Url.Action("SendOtpEmailAction", "SEC_User")';
+
+            // Send AJAX request to the action method
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val() // Include AntiForgery token
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        console.log("OTP email sent successfully!");
+                        // Optionally, you could show a message to the user or handle further logic
+                    } else {
+                        console.log("Failed to send OTP email.");
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        }
+    </script>
+}

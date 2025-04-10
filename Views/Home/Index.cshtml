@@ -1,0 +1,128 @@
+﻿<div class="pagetitle">
+    <h1>Dashboard</h1>
+    <nav>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-action="Index" asp-controller="Home">Home</a></li>
+            <li class="breadcrumb-item active">Dashboard</li>
+        </ol>
+    </nav>
+</div><!-- End Page Title -->
+
+<section class="section dashboard">
+    <div class="row">
+
+        <!-- Left side columns -->
+        <div class="col-lg-12">
+            <div class="row">
+
+                <!-- Group Card -->
+                <div class="col-xxl-4 col-md-6">
+                    <div class="card info-card sales-card">
+
+                        <div class="card-body">
+                            <h5 class="card-title">Groups</h5>
+
+                            <div class="d-flex align-items-center">
+                                <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                    <i class="bi bi-people"></i>
+                                </div>
+                                <div class="ps-3">
+                                    <h6>@ViewData["GroupCount"]</h6>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div><!-- End Group Card -->
+                <!-- Expense Card -->
+                <div class="col-xxl-4 col-md-6">
+                    <div class="card info-card customers-card">
+
+                        <div class="card-body">
+                            <h5 class="card-title">Total Expense</h5>
+
+                            <div class="d-flex align-items-center">
+                                <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                    <i class="bi bi-cash-coin"></i>
+                                </div>
+                                <div class="ps-3">
+                                    <h6>@ViewData["TotalExpense"]</h6>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div><!-- End Expense Card -->
+                <!-- Receivable Card -->
+                <div class="col-xxl-4 col-md-6">
+                    <div class="card info-card revenue-card">
+
+
+
+                        <div class="card-body">
+                            <h5 class="card-title">Receivable Amount</h5>
+
+                            <div class="d-flex align-items-center">
+                                <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                    <i class="bi bi-currency-dollar"></i>
+                                </div>
+                                <div class="ps-3">
+                                    <h6>@ViewData["ReceivableAmout"]</h6>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div><!-- End Receivable Card -->
+                <!-- Payable Card -->
+                <div class="col-xxl-4 col-xl-12">
+
+                    <div class="card info-card customers-card">
+
+
+                        <div class="card-body">
+                            <h5 class="card-title">Payable Amount</h5>
+
+                            <div class="d-flex align-items-center">
+                                <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                    <i class="bi bi-currency-dollar"></i>
+                                </div>
+                                <div class="ps-3">
+                                    <h6>@ViewData["PayableAmout"]</h6>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div><!-- End Payable Card -->
+                <!-- Balance Card -->
+                <div class="col-xxl-4 col-xl-12">
+
+                    <div class="@((Convert.ToBoolean(ViewData["WhichBalance"]) ? "card info-card revenue-card" : "card info-card customers-card"))">
+                        <div class="card-body">
+                            <h5 class="card-title">Balance</h5>
+
+                            <div class="d-flex align-items-center">
+                                <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+                                    <i class="bi bi-currency-dollar"></i>
+                                </div>
+
+                                <div class="ps-3">
+                                    <h6>@ViewData["Balance"]</h6>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div><!-- End Balance Card -->
+                
+
+            </div>
+        </div><!-- End Left side columns -->
+
+    </div>
+</section>
+
+@* </main> *@

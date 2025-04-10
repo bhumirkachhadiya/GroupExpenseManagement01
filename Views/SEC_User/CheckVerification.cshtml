@@ -1,0 +1,62 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+}
+
+@{
+    Layout = "~/Views/Shared/_Layout_Login.cshtml";
+}
+
+<div class="session">
+    <div class="left">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 302.5" version="1.1">
+            <style type="text/css">
+                .st01 {
+                    fill: #fff;
+                }</style>
+            <path class="st01" d="m126 302.2..."></path>
+        </svg>
+    </div>
+
+    <form method="post" asp-action="NewPasswordMail2" asp-controller="SEC_User" class="log-in" autocomplete="off">
+        <h4>We are <span>Expense Management</span></h4>
+        <h3>Hello @TempData["UName"]!</h3>
+        <br />
+        <p>Enter the verification OTP, and you will receive your new password in your email!</p>
+
+        @if (TempData["ErrorMSG"] != null)
+        {
+            <div style="padding: 15px; margin-bottom: 20px; border: 1px solid #f5c6cb; border-radius: 4px; color: #721c24; background-color: #f8d7da;">
+                @TempData["ErrorMSG"]
+            </div>
+        }
+
+        <div class="floating-label">
+            <input type="hidden" name="UserID" value="@TempData["UserID"]"  />
+            <input type="hidden" name="UName" value="@TempData["UName"]" />
+            <input type="hidden" name="Email" value="@TempData["Email"]" />
+            <input type="password" placeholder="Otp" name="otp" id="password" autocomplete="off" />
+            <label for="Password">Otp:</label>
+            <div class="icon">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" version="1.1">
+                    <path d="M19,21H5V9h14V21z M6,20h12V10H6V20z" />
+                    <path d="M16.5,10h-1V7c0-1.9-1.6-3.5-3.5-3.5S8.5,5.1,8.5,7v3h-1V7c0-2.5,2-4.5,4.5-4.5s4.5,2,4.5,4.5V10z" />
+                    <path d="m12 16.5c-0.8 0-1.5-0.7-1.5-1.5s0.7-1.5 1.5-1.5 1.5 0.7 1.5 1.5-0.7 1.5-1.5 1.5z" />
+                </svg>
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Change Password</button>
+
+        <a asp-action="Index" asp-controller="SEC_User" class="discrete">Already have an account? <span style="color: #007bff;">Log in</span></a>
+        <a asp-action="Register" asp-controller="SEC_User" class="discrete">Don't have an account? <span style="color: #007bff;">Sign up</span></a>
+
+    </form>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

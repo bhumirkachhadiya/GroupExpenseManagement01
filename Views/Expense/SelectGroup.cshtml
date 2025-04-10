@@ -1,0 +1,101 @@
+﻿<div class="pagetitle">
+    <h1>Expense Form</h1>
+    <nav>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+            <li class="breadcrumb-item"><a asp-controller="Expense" asp-action="Index">Expenses</a></li>
+            <li class="breadcrumb-item active"> Add Expense </li>
+        </ol>
+    </nav>
+</div><!-- End Page Title -->
+
+<div class="card">
+    <div class="card-body">
+        <h5 class="card-title mb-3 text-center"> Select Group </h5>
+
+        <form method="post" asp-action="SelectGroup" asp-controller="Expense">
+
+
+            <div class="row mb-3">
+                <label class="col-sm-2 col-form-label"><span class="text-danger">*</span>Select Group</label>
+
+                <div class="col-sm-10">
+                    <!-- Search bar -->
+                    <input type="text" id="searchGroupInput" class="form-control mb-3" placeholder="Search Groups" title="Enter search keyword">
+
+                    <!-- Filtered group options -->
+                    <div id="groupOptions" class="scrollable-checkbox-list">
+                        @if (ViewBag.GroupList != null)
+                        {
+                            @foreach (var group in ViewBag.GroupList)
+                            {
+                                <div class="form-check my-2 group-item">
+                                    <input type="radio" name="GroupID" id="group_@group.GroupID" value="@group.GroupID" @* @(Model.GroupID == group.GroupID ? "checked" : "") *@ />
+                                    <label class="form-check-label" for="group_@group.GroupID">
+                                        @group.GroupName
+                                    </label>
+                                </div>
+                            }
+                        }
+                    </div>
+                    @* <span asp-validation-for="GroupID" class="text-danger"></span> *@
+                </div>
+            </div>
+
+
+
+
+            <div class="text-center">
+                <button type="submit" class="btn btn-primary">Continue</button>
+                <a asp-action="Index" asp-controller="Expense" class="btn btn-secondary">Back</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        $(document).ready(function () {
+            $("#searchGroupInput").on("keyup", function () {
+                var value = $(this).val().toLowerCase();
+                $(".group-item").filter(function () {
+                    $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1);
+                });
+            });
+
+            // Sync selected radio button with hidden input
+            $(".group-item input[type='radio']").on("change", function () {
+                $("input[name='GroupID']").val($(this).val());
+            });
+        });
+    </script>
+    @* <script>
+        $(document).ready(function () {
+            $("#searchGroupInput").on("keyup", function () {
+                var value = $(this).val().toLowerCase();
+                $(".group-item").filter(function () {
+                    $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1);
+                });
+            });
+
+            // Sync selected radio button with hidden input
+            $(".group-item input[type='radio']").on("change", function () {
+                $("input[name='GroupID']").val($(this).val());
+            });
+        });
+    </script> *@
+}
+
+@section Styles {
+    <style>
+        .scrollable-checkbox-list {
+            max-height: 150px; /* Adjust height as needed to fit approximately 5 items */
+            overflow-y: auto;
+            border: 1px solid #ddd; /* Optional: Add a border for better visual separation */
+            padding: 10px; /* Optional: Add padding for better spacing */
+            border-radius: 4px; /* Optional: Add rounded corners */
+        }
+    </style>
+}

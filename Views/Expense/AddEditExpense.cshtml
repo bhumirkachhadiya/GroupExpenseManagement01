@@ -1,0 +1,278 @@
+﻿@using GroupExpenseManagement01.CommonClasses
+@{
+    var selectedMembersList = Model.SelectedMembers.ToList();
+}
+@model ExpenseModel
+@inject GroupExpenseManagement01.Services.IEncryptionService EncryptionService
+
+<div class="pagetitle">
+    <h1>@ViewData["GroupName"]</h1>
+    <nav>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+            <li class="breadcrumb-item"><a asp-controller="Group" asp-action="Index">Groups</a></li>
+            <li class="breadcrumb-item">
+                <a asp-controller="Expense"
+                   asp-action="GroupExpense"
+                   asp-route-GroupIDString="@EncryptionService.EncryptInteger(Convert.ToInt32(Model.GroupID))">
+                    @ViewData["GroupName"]'s Expenses
+                </a>
+            </li>
+            <li class="breadcrumb-item active">Add Group Expense</li>
+        </ol>
+    </nav>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <h5 class="card-title mb-3 text-center">@TempData["PageTitle"]</h5>
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger">
+                @TempData["ErrorMessage"]
+            </div>
+        }
+
+        <form method="post" asp-action="AddEditExpense2" asp-controller="Expense">
+            <input type="hidden" asp-for="ExpenseID" />
+            <input type="hidden" asp-for="UserID" />
+            <input type="hidden" asp-for="ExpenseDate" />
+            <input type="hidden" asp-for="GroupID" />
+
+            <!-- Currency Selection -->
+            <div class="row mb-3">
+                <label class="col-sm-2 col-form-label">Select Currency</label>
+                <div class="col-sm-10">
+                    @* id="currencySelector" onchange="onCurrencyChange()" *@
+                    <select class="form-control" asp-for="CurrencyID" asp-items="@(new SelectList(ViewBag.CurrencyList, "CurrencyID", "CurrencyName"))"></select>
+                    <span asp-validation-for="CurrencyID" class="text-danger"></span>
+                </div>
+            </div>
+
+            <!-- Amount Input -->
+            <div class="row mb-3">
+                <label class="col-sm-2 col-form-label"><span class="text-danger">*</span>Amount</label>
+                <div class="col-sm-10">
+                    <input asp-for="Amount" class="form-control" step="0.01" />
+                    <span asp-validation-for="Amount" class="text-danger"></span>
+                </div>
+            </div>
+
+            <!-- Description Input -->
+            <div class="row mb-3">
+                <label class="col-sm-2 col-form-label"><span class="text-danger">*</span>Description</label>
+                <div class="col-sm-10">
+                    <input asp-for="Description" class="form-control" />
+                    <span asp-validation-for="Description" class="text-danger"></span>
+                </div>
+            </div>
+
+            <!-- Members Selection -->
+            <div class="row mb-3">
+    <label class="col-sm-2 col-form-label">Select Members</label>
+    <div class="col-sm-10">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <input type="text" id="searchInput" class="form-control" placeholder="Search Members" />
+        </div>
+        <div class="row">
+            <div class="form-check ms-4">
+                <input type="checkbox" id="selectAll" class="form-check-input" />
+                <label class="form-check-label" for="selectAll"><strong>Select All</strong></label>
+            </div>
+        </div>
+
+        <div class="scrollable-checkbox-list">
+            @if (ViewBag.UserList != null)
+            {
+                @foreach (var user in ViewBag.UserList)
+                {
+                    <div class="form-check my-2 user-item">
+                        <input type="checkbox"
+                               class="form-check-input member-checkbox"
+                               id="user_@user.UserID"
+                               name="SelectedMembers"
+                               value="@user.UserID"
+                               @(selectedMembersList.Contains(user.UserID) ? "checked" : "") />
+                        <label class="form-check-label" for="user_@user.UserID">
+                            <div>@user.UserName (@user.Email)</div>
+                            <div id="amount_@user.UserID" class="highlighted-amount">$0.00</div>
+                        </label>
+                    </div>
+                }
+            }
+        </div>
+        <span asp-validation-for="SelectedMembers" class="text-danger"></span>
+    </div>
+</div>
+
+            <!-- Category Selection -->
+            <div class="row mb-3">
+                <label class="col-sm-2 col-form-label">Select Category</label>
+                <div class="col-sm-10">
+                    <select class="form-control" asp-for="CategoryID" asp-items="@(new SelectList(ViewBag.CategoryList, "CategoryID", "CategoryName"))">
+                        <option value="">Select Category</option>
+                    </select>
+                    <span asp-validation-for="CategoryID" class="text-danger"></span>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="text-center">
+                <button type="submit" class="btn btn-primary">Add</button>
+                <a asp-controller="Expense"
+                   asp-action="GroupExpense"
+                   asp-route-GroupIDString="@EncryptionService.EncryptInteger(Convert.ToInt32(Model.GroupID))" class="btn btn-secondary">Back</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        $(document).ready(function () {
+            // Search Members
+            $("#searchInput").on("keyup", function () {
+                var value = $(this).val().toLowerCase();
+                $(".user-item").filter(function () {
+                    $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1);
+                });
+            });
+
+            // Select All Members
+            $("#selectAll").on("change", function () {
+                $(".member-checkbox").prop("checked", $(this).prop("checked"));
+                calculateDistribution();
+            });
+
+            $(".member-checkbox").on("change", function () {
+                const allChecked = $(".member-checkbox").length === $(".member-checkbox:checked").length;
+                $("#selectAll").prop("checked", allChecked);
+                calculateDistribution();
+            });
+
+            // Update Distribution Amount
+            $("input[name='Amount']").on("input", calculateDistribution);
+
+            // function calculateDistribution() {
+            //     const amount = parseFloat($("input[name='Amount']").val()) || 0;
+            //     const selectedMembers = $(".member-checkbox:checked").length;
+            //     let share = selectedMembers > 0 ? (amount / selectedMembers).toFixed(2) : 0;
+            //     const selectElement = document.getElementById("CurrencyID");
+            //     const selectedCurrencyName = selectElement.options[selectElement.selectedIndex].text;
+            //     if ("INR".Equals(selectedCurrencyName.ToString(), StringComparison.OrdinalIgnoreCase))
+            //     {
+            //         share = HelperClass.FormatToIndianCurrency(Convert.ToDecimal(share));
+            //     }
+            //     else if ("USD".Equals(selectedCurrencyName.ToString(), StringComparison.OrdinalIgnoreCase))
+            //     {
+            //         share = HelperClass.FormatToUSDCurrency(Convert.ToDecimal(share));
+            //     }
+            //     else if ("EUR".Equals(selectedCurrencyName.ToString(), StringComparison.OrdinalIgnoreCase))
+            //     {
+            //         share = HelperClass.FormatToEuroCurrency(Convert.ToDecimal(share));                
+            //     }
+            //     $(".member-checkbox").each(function () {
+            //         const userId = $(this).val();
+            //         if ($(this).is(":checked")) {
+            //             $("#amount_" + userId).text(`${share}`);
+            //             // $("#amount_" + userId).text(`$${share}`);
+            //         } else {
+            //             $("#amount_" + userId).text("0.00");
+            //             // $("#amount_" + userId).text("$0.00");
+            //         }
+            //     });
+            // }
+
+            $(document).ready(function () {
+                // Call calculateDistribution when the page loads
+                calculateDistribution();
+
+                // Recalculate when currency selection changes
+                $("#CurrencyID").change(function () {
+                    calculateDistribution();
+                });
+
+                // Recalculate when amount input changes
+                $("input[name='Amount']").on("input", function () {
+                    calculateDistribution();
+                });
+
+                // Recalculate when member selection changes
+                $(".member-checkbox").change(function () {
+                    calculateDistribution();
+                });
+            });
+
+            function calculateDistribution() {
+                const amount = parseFloat($("input[name='Amount']").val()) || 0;
+                const selectedMembers = $(".member-checkbox:checked").length;
+                let share = selectedMembers > 0 ? (amount / selectedMembers).toFixed(2) : 0;
+
+                const selectElement = document.getElementById("CurrencyID");
+                const selectedCurrencyName = selectElement.options[selectElement.selectedIndex].text;
+
+                // Format share based on selected currency
+                if (selectedCurrencyName.toUpperCase() === "INR") {
+                    share = formatToIndianCurrency(share);
+                } else if (selectedCurrencyName.toUpperCase() === "USD") {
+                    share = formatToUSDCurrency(share);
+                } else if (selectedCurrencyName.toUpperCase() === "EUR") {
+                    share = formatToEuroCurrency(share);
+                }
+
+                $(".member-checkbox").each(function () {
+                    const userId = $(this).val();
+                    if ($(this).is(":checked")) {
+                        $("#amount_" + userId).text(`${share}`);
+                    } else {
+                        if (selectedCurrencyName.toUpperCase() === "INR") {
+                            $("#amount_" + userId).text(`${formatToIndianCurrency(0)}`);
+
+                        } else if (selectedCurrencyName.toUpperCase() === "USD") {
+                            $("#amount_" + userId).text(`${formatToUSDCurrency(0)}`);
+                        } else if (selectedCurrencyName.toUpperCase() === "EUR") {
+                            $("#amount_" + userId).text(`${formatToEuroCurrency(0)}`);
+                        }
+                        // $("#amount_" + userId).text(`${share}`);
+                    }
+                });
+            }
+
+            // JavaScript functions for currency formatting
+            function formatToIndianCurrency(amount) {
+                return `₹${parseFloat(amount).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
+            }
+
+            function formatToUSDCurrency(amount) {
+                return `$${parseFloat(amount).toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
+            }
+
+            function formatToEuroCurrency(amount) {
+                return `€${parseFloat(amount).toLocaleString('fr-FR', { minimumFractionDigits: 2 })}`;
+            }
+
+
+            calculateDistribution();
+        });
+    </script>
+}
+
+@section Styles {
+    <style>
+        .scrollable-checkbox-list {
+            max-height: 150px; /* Reduced size */
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .highlighted-amount {
+            font-size: 0.9em; /* Slightly smaller font size */
+            color: #6c757d;
+        }
+        .form-check-label div {
+            margin: 0; /* Ensure no extra spacing */
+        }
+    </style>
+}

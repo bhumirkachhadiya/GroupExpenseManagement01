@@ -1,0 +1,171 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+}
+
+<section class="section">
+    <div class="pagetitle">
+        <h1>Contact Me</h1>
+        <nav>
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                <li class="breadcrumb-item active">Contact Me</li>
+            </ol>
+        </nav>
+    </div>
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title">Contact Me</h5>
+
+            @if (TempData["Error"] != null)
+            {
+                <div class="alert alert-danger">
+                    @TempData["Error"]
+                </div>
+            }
+            @if (TempData["Success"] != null)
+            {
+                <div class="alert alert-success">
+                    @TempData["Success"]
+                </div>
+            }
+            <div class="row d-flex align-items-stretch">
+                <!-- Make the two columns equal height -->
+
+                <div class="col-lg-6 d-flex flex-column">
+                    <!-- Ensure equal height by stretching -->
+                    <div class="row flex-fill">
+                        <!-- Make the inner content fill the available space -->
+                        <div class="col-md-12">
+                            <div class="info-box">
+                                <i class="bx bx-share-alt"></i>
+                                <h3>Social Profiles</h3>
+                                <div class="social-links">
+                                    <a href="https://x.com/AnshPadalia" class="twitter" target="_blank"><i class="bi bi-twitter"></i></a>
+                                    <a href="https://www.facebook.com/ansh.padalia" class="facebook" target="_blank"><i class="bi bi-facebook"></i></a>
+                                    <a href="https://www.instagram.com/ansh_padalia/?next=https%3A%2F%2Fwww.instagram.com%2Fdirect%2Finbox%2F%3F__coig_login%3D1" class="instagram" target="_blank"><i class="bi bi-instagram"></i></a>
+                                    <a href="#" class="google-plus"><i class="bi bi-skype"></i></a>
+                                    <a href="https://www.linkedin.com/in/ansh-padalia-27a7392a4/" class="linkedin" target="_blank"><i class="bi bi-linkedin"></i></a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-box mt-4">
+                                <i class="bx bx-envelope"></i>
+                                <h3>Email Me</h3>
+                                <p>anshpadalia2004@gmail.com</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-box mt-4">
+                                <i class="bx bx-phone-call"></i>
+                                <h3>Call Me</h3>
+                                <p>+91 7573 8*16 74</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-6 d-flex">
+                    <!-- Flex container for the form to stretch -->
+                    <form id="contact" method="post" asp-action="Mail" asp-controller="ContactUs" class="flex-fill">
+                        <!-- Allow form to fill available space -->
+                        <div class="form-group mt-4">
+                            <input name="Subject" class="form-control" id="subject" placeholder="Subject">
+                        </div>
+                        <div class="form-group mt-4">
+                            <textarea class="form-control" name="MSG" rows="6" placeholder="Message"></textarea>
+                        </div>
+                        <div class="text-center mt-5">
+                            <button type="submit">Send Message</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+@section Styles {
+    <style>
+        .info-box {
+            color: #444444;
+            text-align: center;
+            box-shadow: 0 0 30px rgba(214, 215, 216, 0.6);
+            padding: 20px 0 30px 0;
+        }
+
+            .info-box i.bx {
+                font-size: 24px;
+                color: #007bff; /* Changed to primary color */
+                border-radius: 50%;
+                padding: 15px;
+                background: #e6f2ff; /* Light background for primary color */
+            }
+
+            .info-box h3 {
+                font-size: 20px;
+                color: #777777;
+                font-weight: 700;
+                margin: 10px 0;
+            }
+
+            .info-box p {
+                padding: 0;
+                line-height: 24px;
+                font-size: 14px;
+                margin-bottom: 0;
+            }
+
+        .social-links {
+            margin-top: 15px;
+            display: flex;
+            justify-content: center;
+        }
+
+            .social-links a {
+                font-size: 18px;
+                display: inline-block;
+                color: #687683;
+                line-height: 1;
+                margin: 0 8px;
+                transition: 0.3s;
+                padding: 14px;
+                border-radius: 50px;
+                border: 1px solid #dde1e4;
+            }
+
+                .social-links a:hover {
+                    color: #fff;
+                    border-color: #007bff; /* Primary hover */
+                    background: #007bff; /* Primary background */
+                }
+
+            #contact {
+                box-shadow: 0 0 30px rgba(214, 215, 216, 0.6);
+                padding: 27px;
+            }
+
+            #contact input, form textarea {
+                border-radius: 0;
+                box-shadow: none;
+                font-size: 14px;
+                padding: 10px 15px;
+            }
+
+            #contact button {
+                background: #007bff; /* Primary background */
+                border: 0;
+                padding: 10px 24px;
+                color: #fff;
+                transition: 0.4s;
+                border-radius: 5px;
+            }
+
+                #contact button:hover {
+                    background: #0056b3; /* Darker primary on hover */
+                }
+    </style>
+}
